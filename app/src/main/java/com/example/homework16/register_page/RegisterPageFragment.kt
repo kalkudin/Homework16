@@ -30,7 +30,9 @@ class RegisterPageFragment :
             val email = binding.etEmail.text.toString()
             val password = binding.etPassword.text.toString()
 
-            viewModel.registerUser(email, password)
+            lifecycleScope.launch {
+                viewModel.registerUser(email, password)
+            }
         }
     }
 

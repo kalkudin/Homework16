@@ -1,14 +1,13 @@
 package com.example.homework16.register_page
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.homework16.client.ApiClient
 import com.example.homework16.model.RegistrationData
+import com.example.homework16.model.RegistrationResponse
 import com.example.homework16.model.RegistrationState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import retrofit2.Response
 
 class RegisterPageViewModel : ViewModel() {
 
@@ -17,36 +16,39 @@ class RegisterPageViewModel : ViewModel() {
 
     private val apiService = ApiClient.apiService
 
-    fun registerUser(email: String, password: String) {
-        viewModelScope.launch {
-            try {
-                val response = apiService.registerUser(RegistrationData(email, password))
-                val responseBody = response.body()
+    suspend fun registerUser(email: String, password: String) {
+        try {
+            val response: Response<RegistrationResponse> = apiService.registerUser(RegistrationData(email, password))
 
-                Log.d("RegisterPageViewModel", "Raw Response Body: ${responseBody?.error}")
+            if (!response.isSuccessful) {
+                _registrationState.value = RegistrationState.Error("Registration failed: ${response.message()}")
+                return
+            }
 
-                if (responseBody == null) {
-                    _registrationState.value = RegistrationState.Error("Null response body")
-                    return@launch
-                }
-
+            response.body()?.let { responseBody ->
                 if (responseBody.error != null) {
-                    when (responseBody.error) {
-                        "Missing password" -> {
-                            _registrationState.value = RegistrationState.Error("Missing password")
-                        }
-                        "Note: Only defined users succeed registration" -> {
-                            _registrationState.value = RegistrationState.Error("Invalid email")
-                        }
-                        else -> {
-                            _registrationState.value = RegistrationState.Error("Unknown error")
-                        }
-                    }
+                    handleRegistrationError(responseBody.error)
                 } else {
                     _registrationState.value = RegistrationState.Success
                 }
-            } catch (e: Exception) {
-                _registrationState.value = RegistrationState.Error("Registration failed")
+            } ?: run {
+                _registrationState.value = RegistrationState.Error("Null response body")
+            }
+        } catch (e: Exception) {
+            _registrationState.value = RegistrationState.Error("Registration failed: ${e.message}")
+        }
+    }
+
+    private fun handleRegistrationError(error: String) {
+        when (error) {
+            "Missing password" -> {
+                _registrationState.value = RegistrationState.Error("Missing password")
+            }
+            "Note: Only defined users succeed registration" -> {
+                _registrationState.value = RegistrationState.Error("Invalid email")
+            }
+            else -> {
+                _registrationState.value = RegistrationState.Error("Unknown error")
             }
         }
     }

@@ -38,9 +38,12 @@ class LoginPageFragment :
                 when (state) {
                     is LoginState.Initial -> {
                     }
+
                     is LoginState.Success -> {
-                        Toast.makeText(requireContext(), "Login successful", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Login successful", Toast.LENGTH_SHORT)
+                            .show()
                     }
+
                     is LoginState.Error -> {
                         Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
                     }

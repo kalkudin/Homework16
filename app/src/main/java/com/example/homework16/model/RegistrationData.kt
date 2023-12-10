@@ -17,7 +17,7 @@ data class LoginData(
 
 @JsonClass(generateAdapter = true)
 data class RegistrationResponse(
-    @Json(name = "error") val error: String?,
+    @Json(name = "error") val error: String?
 )
 
 sealed class RegistrationState {
