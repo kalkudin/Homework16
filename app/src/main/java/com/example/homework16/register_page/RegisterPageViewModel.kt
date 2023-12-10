@@ -17,6 +17,7 @@ class RegisterPageViewModel : ViewModel() {
     private val apiService = ApiClient.apiService
 
     suspend fun registerUser(email: String, password: String) {
+        // this is horrible, for starters when you rewrite this, put all of this in an if(isSuccesful) and then run the try-catch
         try {
             val response: Response<RegistrationResponse> = apiService.registerUser(RegistrationData(email, password))
 
@@ -39,6 +40,7 @@ class RegisterPageViewModel : ViewModel() {
         }
     }
 
+    //the body of the error is always null, always displays the same message. ask about it later
     private fun handleRegistrationError(error: String) {
         when (error) {
             "Missing password" -> {
